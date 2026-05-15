@@ -5,4 +5,5 @@ import allure
 @allure.title("API доступен")
 def test_ping(api_client):
     response = api_client.get("/ping")
-    assert response.status_code in [200, 201]
+
+    assert response.status_code == 201
