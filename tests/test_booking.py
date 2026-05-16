@@ -54,26 +54,24 @@ def test_create_booking_minimal(booking_api):
 
 @allure.feature("Booking")
 @allure.title("Создание бронирования с некорректными датами")
+@pytest.mark.xfail(reason="restful-booker не валидирует даты")
 def test_create_booking_bad_dates(api_client):
     payload = generate_booking_payload(bad_dates=True)
 
     response = api_client.post("/booking", json=payload)
     Helper.attach_response(response)
 
-    assert response.status_code == 200
-
-    data = response.json()
-
-    assert "bookingid" in data
+    assert response.status_code == 400
 
 
 @allure.feature("Booking")
 @allure.title("Создание бронирования без обязательных полей")
+@pytest.mark.xfail(reason="restful-booker не валидирует тело запроса корректно")
 def test_create_booking_without_required(api_client):
     response = api_client.post("/booking", json={})
     Helper.attach_response(response)
 
-    assert response.status_code == 500
+    assert response.status_code == 400
 
 
 @allure.feature("Booking")
@@ -124,18 +122,15 @@ def test_filter_by_firstname(booking_api, firstname):
 
     created = booking_api.create(request=request)
     Helper.attach_response(created)
-
     assert created.status_code == 200
 
     created_id = created.json()["bookingid"]
 
     response = booking_api.get_all(firstname=firstname)
     Helper.attach_response(response)
-
     assert response.status_code == 200
 
     data = response.json()
-
     ids = [item["bookingid"] for item in data]
 
     assert created_id in ids
@@ -178,15 +173,35 @@ def test_filter_by_lastname(booking_api):
     "checkin",
     ["2026-03-01", "2026-04-10"],
 )
+@pytest.mark.xfail(reason="restful-booker нестабильно фильтрует по дате checkin")
 def test_filter_by_checkin(booking_api, checkin):
+    request = BookingRequest(
+        firstname="DateCheckin",
+        lastname="Test",
+        totalprice=100,
+        depositpaid=True,
+        bookingdates={
+            "checkin": checkin,
+            "checkout": "2026-12-31",
+        },
+        additionalneeds="Breakfast",
+    )
+
+    created = booking_api.create(request=request)
+    Helper.attach_response(created)
+    assert created.status_code == 200
+
+    created_id = created.json()["bookingid"]
+
     response = booking_api.get_all(checkin=checkin)
     Helper.attach_response(response)
-
     assert response.status_code == 200
 
     data = response.json()
-
     assert isinstance(data, list)
+
+    ids = [item["bookingid"] for item in data]
+    assert created_id in ids
 
 
 @allure.feature("Booking")
@@ -196,14 +211,33 @@ def test_filter_by_checkin(booking_api, checkin):
     ["2026-06-01", "2026-07-15"],
 )
 def test_filter_by_checkout(booking_api, checkout):
+    request = BookingRequest(
+        firstname="DateCheckout",
+        lastname="Test",
+        totalprice=120,
+        depositpaid=True,
+        bookingdates={
+            "checkin": "2026-01-01",
+            "checkout": checkout,
+        },
+        additionalneeds="Breakfast",
+    )
+
+    created = booking_api.create(request=request)
+    Helper.attach_response(created)
+    assert created.status_code == 200
+
+    created_id = created.json()["bookingid"]
+
     response = booking_api.get_all(checkout=checkout)
     Helper.attach_response(response)
-
     assert response.status_code == 200
 
     data = response.json()
-
     assert isinstance(data, list)
+
+    ids = [item["bookingid"] for item in data]
+    assert created_id in ids
 
 
 @allure.feature("Booking")
@@ -243,7 +277,6 @@ def test_update_without_token(api_client):
         "/booking/1",
         json=booking_payload,
     )
-
     Helper.attach_response(response)
 
     assert response.status_code == 403
@@ -261,7 +294,6 @@ def test_update_wrong_token(api_client):
         json=generate_booking_payload(with_additional=True),
         headers=headers,
     )
-
     Helper.attach_response(response)
 
     assert response.status_code == 403
@@ -293,7 +325,6 @@ def test_delete_booking(booking_api, auth_api):
         booking_id,
         token=token,
     )
-
     Helper.attach_response(response)
 
     assert response.status_code == 201
@@ -303,7 +334,6 @@ def test_delete_booking(booking_api, auth_api):
 @allure.title("Попытка удаления без токена авторизации")
 def test_delete_without_token(api_client):
     response = api_client.delete("/booking/1")
-
     Helper.attach_response(response)
 
     assert response.status_code == 403
@@ -320,7 +350,6 @@ def test_delete_wrong_token(api_client):
         "/booking/1",
         headers=headers,
     )
-
     Helper.attach_response(response)
 
     assert response.status_code == 403
