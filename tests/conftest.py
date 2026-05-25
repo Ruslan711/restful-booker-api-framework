@@ -1,5 +1,4 @@
 import json
-import os
 import sys
 import warnings
 from pathlib import Path
@@ -11,8 +10,8 @@ PROJECT_ROOT = Path(__file__).parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from config.environments import Environment, EnvironmentConfig, load_environment
-from services.restful_booker.api import RestfulBookerApi
+from config.environments import Environment, EnvironmentConfig, load_environment  # noqa: E402
+from services.restful_booker.api import RestfulBookerApi  # noqa: E402
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
