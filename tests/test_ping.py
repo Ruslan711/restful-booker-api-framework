@@ -1,8 +1,11 @@
+import allure
 from utils.assertions import assert_status_code
 
 
-def test_ping_healthcheck(restful_booker_api):
+@allure.title("Healthcheck /ping отвечает 201")
+def test_ping_healthcheck(api):
     """Сервис отвечает на /ping."""
-    response, _ = restful_booker_api.ping.ping(validate=False)
+    with allure.step("Вызов /ping"):
+        response, _ = api.ping.ping(validate=False)
 
     assert_status_code(response, 201)

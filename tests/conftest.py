@@ -1,9 +1,15 @@
 import json
+import os
+import sys
 import warnings
 from pathlib import Path
 from typing import Callable, Generator
 
 import pytest
+
+PROJECT_ROOT = Path(__file__).parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from config.environments import Environment, EnvironmentConfig, load_environment
 from services.restful_booker.api import RestfulBookerApi
@@ -46,6 +52,12 @@ def test_data(request: pytest.FixtureRequest) -> dict:
 def restful_booker_api(env_config: EnvironmentConfig) -> RestfulBookerApi:
     """Фасад для работы с Restful Booker API."""
     return RestfulBookerApi(env_config)
+
+
+@pytest.fixture(scope="session")
+def api(restful_booker_api: RestfulBookerApi) -> RestfulBookerApi:
+    """Фасад API для тестов."""
+    return restful_booker_api
 
 
 @pytest.fixture
