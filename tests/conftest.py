@@ -1,5 +1,7 @@
 import json
+import warnings
 from pathlib import Path
+from typing import Callable, Generator
 
 import pytest
 
@@ -44,3 +46,21 @@ def test_data(request: pytest.FixtureRequest) -> dict:
 def restful_booker_api(env_config: EnvironmentConfig) -> RestfulBookerApi:
     """Фасад для работы с Restful Booker API."""
     return RestfulBookerApi(env_config)
+
+
+@pytest.fixture
+def cleanup() -> Generator[list[Callable[[], None]], None, None]:
+    """Уборка ресурсов после теста."""
+    tasks: list[Callable[[], None]] = []
+    yield tasks
+
+    errors: list[Exception] = []
+
+    for task in reversed(tasks):
+        try:
+            task()
+        except Exception as exc:
+            errors.append(exc)
+
+    if errors:
+        warnings.warn(f"Cleanup errors: {errors}")
