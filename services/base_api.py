@@ -15,6 +15,8 @@ from services.exceptions import ApiError, ApiTimeoutError, ApiConnectionError
 
 logger = logging.getLogger("api")
 
+DEFAULT_TIMEOUT = 10  # seconds
+
 
 class BaseAPI:
     def __init__(self, env_config: EnvironmentConfig) -> None:
@@ -28,7 +30,7 @@ class BaseAPI:
             total=3,
             backoff_factor=0.3,
             status_forcelist=(500, 502, 503, 504),
-            allowed_methods=frozenset({"GET", "POST", "PUT", "PATCH", "DELETE"}),
+            allowed_methods=frozenset({"GET"}),
         )
 
         adapter = HTTPAdapter(
@@ -82,7 +84,6 @@ class BaseAPI:
         for key, value in response.headers.items():
             lines.append(f"{key}: {value}")
 
-        body_text: str
         try:
             body_text = response.text
         except Exception:
@@ -102,14 +103,31 @@ class BaseAPI:
         request_id = uuid.uuid4().hex
 
         headers = kwargs.pop("headers", {}) or {}
+        headers = headers.copy()
         headers.setdefault("X-Request-Id", request_id)
 
+        timeout = kwargs.pop("timeout", DEFAULT_TIMEOUT)
+
         data = kwargs.get("data") or kwargs.get("json")
+
+        self._attach_request(
+            method=method,
+            url=url,
+            request_id=request_id,
+            headers=headers,
+            body=data,
+        )
 
         start_ts = time.perf_counter()
 
         try:
-            response = self._session.request(method=method, url=url, headers=headers, **kwargs)
+            response = self._session.request(
+                method=method,
+                url=url,
+                headers=headers,
+                timeout=timeout,
+                **kwargs,
+            )
         except requests.exceptions.Timeout as exc:
             raise ApiTimeoutError(f"Request timed out: {method} {url}") from exc
         except requests.exceptions.ConnectionError as exc:
@@ -128,13 +146,6 @@ class BaseAPI:
             elapsed_ms,
         )
 
-        self._attach_request(
-            method=method,
-            url=url,
-            request_id=request_id,
-            headers=headers,
-            body=data,
-        )
         self._attach_response(request_id=request_id, response=response)
 
         return response
