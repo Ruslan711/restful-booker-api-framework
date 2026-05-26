@@ -1,22 +1,29 @@
 import pytest
-from api.api_client import APIClient
-from api.auth_api import AuthAPI
-from api.booking_api import BookingAPI
+
+from config.environments import Environment, EnvironmentConfig, load_environment
 
 
-BASE_URL = "https://restful-booker.herokuapp.com"
-
-
-@pytest.fixture(scope="session")
-def api_client():
-    return APIClient(BASE_URL)
-
-
-@pytest.fixture(scope="session")
-def auth_api(api_client):
-    return AuthAPI(api_client)
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--env",
+        action="store",
+        default=Environment.DEV.value,
+        choices=[env.value for env in Environment],
+        help="Target environment for API tests",
+    )
 
 
 @pytest.fixture(scope="session")
-def booking_api(api_client):
-    return BookingAPI(api_client)
+def env(request: pytest.FixtureRequest) -> Environment:
+    env_value = request.config.getoption("--env")
+    return Environment(env_value)
+
+
+@pytest.fixture(scope="session")
+def env_config(env: Environment) -> EnvironmentConfig:
+    """Конфигурация выбранного окружения для всех тестов."""
+    config = load_environment(env)
+
+    print(f"\n[pytest] Running tests on environment: {env.value} ({config.booker_url})")
+
+    return config
