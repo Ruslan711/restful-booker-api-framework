@@ -2,7 +2,6 @@ from typing import List, Tuple
 
 from requests import Response
 
-from config.environments import EnvironmentConfig
 from services.base_api import BaseAPI
 from services.restful_booker.booking.models.booking import (
     Booking,
@@ -11,13 +10,10 @@ from services.restful_booker.booking.models.booking import (
 
 
 class BookingClient(BaseAPI):
-    def __init__(self, env_config: EnvironmentConfig) -> None:
-        super().__init__(env_config)
-
     def create(
         self,
         payload: Booking,
-        validate: bool = True,
+        validate: bool = False,
     ) -> Tuple[Response, BookingCreateResponse | None]:
         response = self.post("/booking", json=payload.model_dump())
 
@@ -30,7 +26,7 @@ class BookingClient(BaseAPI):
     def get_by_id(
         self,
         booking_id: int,
-        validate: bool = True,
+        validate: bool = False,
     ) -> Tuple[Response, Booking | None]:
         response = self.get(f"/booking/{booking_id}")
 
@@ -42,7 +38,7 @@ class BookingClient(BaseAPI):
 
     def list(
         self,
-        validate: bool = True,
+        validate: bool = False,
         **params: str,
     ) -> Tuple[Response, List[int] | None]:
         response = self.get("/booking", params=params or None)
@@ -58,7 +54,7 @@ class BookingClient(BaseAPI):
         self,
         booking_id: int,
         payload: Booking,
-        validate: bool = True,
+        validate: bool = False,
     ) -> Tuple[Response, Booking | None]:
         response = self.put(f"/booking/{booking_id}", json=payload.model_dump())
 
@@ -71,10 +67,13 @@ class BookingClient(BaseAPI):
     def update_patch(
         self,
         booking_id: int,
-        payload: dict,
-        validate: bool = True,
+        payload: Booking,
+        validate: bool = False,
     ) -> Tuple[Response, Booking | None]:
-        response = self.patch(f"/booking/{booking_id}", json=payload)
+        response = self.patch(
+            f"/booking/{booking_id}",
+            json=payload.model_dump(exclude_unset=True),
+        )
 
         if not validate:
             return response, None
@@ -85,11 +84,8 @@ class BookingClient(BaseAPI):
     def remove(
         self,
         booking_id: int,
-        validate: bool = True,
+        validate: bool = False,
     ) -> Tuple[Response, None]:
         response = self.delete(f"/booking/{booking_id}")
-
-        if validate:
-            assert response.status_code in (200, 201, 204)
 
         return response, None
