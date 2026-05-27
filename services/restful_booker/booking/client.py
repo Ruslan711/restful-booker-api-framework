@@ -1,5 +1,4 @@
 from typing import List, Tuple
-
 from requests import Response
 
 from services.base_api import BaseAPI
@@ -7,68 +6,64 @@ from services.restful_booker.booking.models.booking import (
     Booking,
     BookingCreateResponse,
 )
+from services.restful_booker.booking.models.booking_patch import BookingPatch
 
 
 class BookingClient(BaseAPI):
+
     def create(
         self,
         payload: Booking,
-        validate: bool = False,
+        validate: bool = True,
     ) -> Tuple[Response, BookingCreateResponse | None]:
         response = self.post("/booking", json=payload.model_dump())
 
         if not validate:
             return response, None
 
-        model = BookingCreateResponse.model_validate_json(response.text)
-        return response, model
+        return response, BookingCreateResponse.model_validate_json(response.text)
 
     def get_by_id(
         self,
         booking_id: int,
-        validate: bool = False,
+        validate: bool = True,
     ) -> Tuple[Response, Booking | None]:
         response = self.get(f"/booking/{booking_id}")
 
         if not validate:
             return response, None
 
-        model = Booking.model_validate_json(response.text)
-        return response, model
+        return response, Booking.model_validate_json(response.text)
 
     def list(
         self,
-        validate: bool = False,
-        **params: str,
+        validate: bool = True,
     ) -> Tuple[Response, List[int] | None]:
-        response = self.get("/booking", params=params or None)
+        response = self.get("/booking")
 
         if not validate:
             return response, None
 
-        data = response.json()
-        booking_ids = [item["bookingid"] for item in data]
-        return response, booking_ids
+        return response, [item["bookingid"] for item in response.json()]
 
     def update_put(
         self,
         booking_id: int,
         payload: Booking,
-        validate: bool = False,
+        validate: bool = True,
     ) -> Tuple[Response, Booking | None]:
         response = self.put(f"/booking/{booking_id}", json=payload.model_dump())
 
         if not validate:
             return response, None
 
-        model = Booking.model_validate_json(response.text)
-        return response, model
+        return response, Booking.model_validate_json(response.text)
 
     def update_patch(
         self,
         booking_id: int,
-        payload: Booking,
-        validate: bool = False,
+        payload: BookingPatch,
+        validate: bool = True,
     ) -> Tuple[Response, Booking | None]:
         response = self.patch(
             f"/booking/{booking_id}",
@@ -78,14 +73,11 @@ class BookingClient(BaseAPI):
         if not validate:
             return response, None
 
-        model = Booking.model_validate_json(response.text)
-        return response, model
+        return response, Booking.model_validate_json(response.text)
 
     def remove(
         self,
         booking_id: int,
-        validate: bool = False,
+        validate: bool = True,
     ) -> Tuple[Response, None]:
-        response = self.delete(f"/booking/{booking_id}")
-
-        return response, None
+        return self.delete(f"/booking/{booking_id}"), None
