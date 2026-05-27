@@ -7,7 +7,7 @@ import allure
 import requests
 from requests import Response
 from requests.adapters import HTTPAdapter
-from urllib3.util import Retry  # type: ignore[import]
+from urllib3.util import Retry
 
 from config.environments import EnvironmentConfig
 from services.exceptions import ApiError, ApiTimeoutError, ApiConnectionError
@@ -15,7 +15,7 @@ from services.exceptions import ApiError, ApiTimeoutError, ApiConnectionError
 
 logger = logging.getLogger("api")
 
-DEFAULT_TIMEOUT = 10  # seconds
+DEFAULT_TIMEOUT = 10
 
 
 class BaseAPI:
@@ -30,7 +30,13 @@ class BaseAPI:
             total=3,
             backoff_factor=0.3,
             status_forcelist=(500, 502, 503, 504),
-            allowed_methods=frozenset({"GET"}),
+            allowed_methods=frozenset({
+                "GET",
+                "HEAD",
+                "OPTIONS",
+                "PUT",
+                "DELETE",
+            }),
         )
 
         adapter = HTTPAdapter(
@@ -44,28 +50,21 @@ class BaseAPI:
 
         return session
 
-    def _attach_request(
-        self,
-        *,
-        method: str,
-        url: str,
-        request_id: str,
-        headers: dict[str, Any],
-        body: Any,
-    ) -> None:
-        """Прикрепляет REQUEST в Allure с привязкой к request_id."""
-        lines: list[str] = [
+    def _attach_request(self, *, method: str, url: str, request_id: str,
+                         headers: dict[str, Any], body: Any) -> None:
+        lines = [
             f"REQUEST_ID: {request_id}",
             f"METHOD: {method}",
             f"URL: {url}",
             "",
             "HEADERS:",
         ]
-        for key, value in headers.items():
-            lines.append(f"{key}: {value}")
+
+        for k, v in headers.items():
+            lines.append(f"{k}: {v}")
 
         if body is not None:
-            lines.extend(["", "BODY:", str(body)])
+            lines += ["", "BODY:", str(body)]
 
         allure.attach(
             "\n".join(lines),
@@ -74,23 +73,19 @@ class BaseAPI:
         )
 
     def _attach_response(self, *, request_id: str, response: Response) -> None:
-        """Прикрепляет RESPONSE в Allure с привязкой к request_id."""
-        lines: list[str] = [
+        lines = [
             f"REQUEST_ID: {request_id}",
             f"STATUS: {response.status_code}",
             "",
             "HEADERS:",
         ]
-        for key, value in response.headers.items():
-            lines.append(f"{key}: {value}")
 
-        try:
-            body_text = response.text
-        except Exception:
-            body_text = "<unable to decode response body>"
+        for k, v in response.headers.items():
+            lines.append(f"{k}: {v}")
 
-        if body_text:
-            lines.extend(["", "BODY:", body_text])
+        body_text = response.text or ""
+
+        lines += ["", "BODY:", body_text]
 
         allure.attach(
             "\n".join(lines),
@@ -104,11 +99,10 @@ class BaseAPI:
 
         headers = kwargs.pop("headers", {}) or {}
         headers = headers.copy()
-        headers.setdefault("X-Request-Id", request_id)
+        headers["X-Request-Id"] = request_id
 
         timeout = kwargs.pop("timeout", DEFAULT_TIMEOUT)
-
-        data = kwargs.get("data") or kwargs.get("json")
+        data = kwargs.get("json") or kwargs.get("data")
 
         self._attach_request(
             method=method,
@@ -118,7 +112,7 @@ class BaseAPI:
             body=data,
         )
 
-        start_ts = time.perf_counter()
+        start = time.perf_counter()
 
         try:
             response = self._session.request(
@@ -128,14 +122,17 @@ class BaseAPI:
                 timeout=timeout,
                 **kwargs,
             )
+
         except requests.exceptions.Timeout as exc:
-            raise ApiTimeoutError(f"Request timed out: {method} {url}") from exc
+            raise ApiTimeoutError(f"Timeout: {method} {url}") from exc
+
         except requests.exceptions.ConnectionError as exc:
             raise ApiConnectionError(f"Connection error: {method} {url}") from exc
-        except requests.exceptions.RequestException as exc:
-            raise ApiError(f"Request failed: {method} {url}") from exc
 
-        elapsed_ms = int((time.perf_counter() - start_ts) * 1000)
+        except requests.exceptions.RequestException as exc:
+            raise ApiError(f"Request error: {method} {url}") from exc
+
+        elapsed_ms = int((time.perf_counter() - start) * 1000)
 
         logger.info(
             "api_request method=%s url=%s status=%s request_id=%s elapsed_ms=%s",
@@ -156,11 +153,11 @@ class BaseAPI:
     def post(self, path: str, **kwargs: Any) -> Response:
         return self._request("POST", path, **kwargs)
 
-    def put(self, path: str, **kwargs: Any) -> Response:
+    def put(self, path: str, **kwargs: Any):
         return self._request("PUT", path, **kwargs)
 
-    def patch(self, path: str, **kwargs: Any) -> Response:
+    def patch(self, path: str, **kwargs: Any):
         return self._request("PATCH", path, **kwargs)
 
-    def delete(self, path: str, **kwargs: Any) -> Response:
+    def delete(self, path: str, **kwargs: Any):
         return self._request("DELETE", path, **kwargs)
