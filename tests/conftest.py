@@ -37,9 +37,7 @@ def test_data(request: pytest.FixtureRequest) -> dict:
     test_data_path = project_root / "test_data" / f"{environment.value}.json"
 
     with test_data_path.open(encoding="utf-8") as f:
-        data = json.load(f)
-
-    return data
+        return json.load(f)
 
 
 @pytest.fixture(scope="session")
@@ -50,7 +48,10 @@ def restful_booker_api(env_config: EnvironmentConfig) -> RestfulBookerApi:
 
 @pytest.fixture
 def cleanup() -> Generator[list[Callable[[], None]], None, None]:
-    """Уборка ресурсов после теста."""
+    """
+    Уборка ресурсов после теста (LIFO порядок).
+    Используется для удаления созданных сущностей.
+    """
     tasks: list[Callable[[], None]] = []
     yield tasks
 
@@ -58,6 +59,7 @@ def cleanup() -> Generator[list[Callable[[], None]], None, None]:
 
     for task in reversed(tasks):
         try:
+            print(f"Cleaning up: {task}")
             task()
         except Exception as exc:
             errors.append(exc)
