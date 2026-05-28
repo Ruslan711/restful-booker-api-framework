@@ -1,10 +1,10 @@
 import json
-import os
 import sys
 import warnings
 from pathlib import Path
 from typing import Callable, Generator
 
+import allure
 import pytest
 
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -13,6 +13,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from config.environments import Environment, EnvironmentConfig, load_environment
 from services.restful_booker.api import RestfulBookerApi
+from services.restful_booker.auth.assertions import assert_auth_successful
+from services.restful_booker.auth.models.auth import AuthRequest
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -49,15 +51,22 @@ def test_data(request: pytest.FixtureRequest) -> dict:
 
 
 @pytest.fixture(scope="session")
-def restful_booker_api(env_config: EnvironmentConfig) -> RestfulBookerApi:
+def api(env_config: EnvironmentConfig) -> RestfulBookerApi:
     """Фасад для работы с Restful Booker API."""
     return RestfulBookerApi(env_config)
 
 
 @pytest.fixture(scope="session")
-def api(restful_booker_api: RestfulBookerApi) -> RestfulBookerApi:
-    """Фасад API для тестов."""
-    return restful_booker_api
+def set_token(api: RestfulBookerApi, test_data: dict) -> str:
+    """Создаёт токен для авторизованных операций и возвращает его значение."""
+    creds = test_data["auth"]["valid"]
+    payload = AuthRequest(**creds)
+
+    with allure.step("Создание токена авторизации для тестов"):
+        response, model = api.auth.create_token(payload)
+
+    assert_auth_successful(response, model)
+    return model.token  # type: ignore[union-attr]
 
 
 @pytest.fixture
