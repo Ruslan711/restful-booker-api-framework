@@ -13,9 +13,6 @@
 # Dev (по умолчанию)
 pytest
 
-# QA
-pytest --env=qa
-
 # Stage
 pytest --env=stage
 ```
@@ -36,7 +33,7 @@ allure serve allure-results
 allure generate allure-results -o allure-report --clean
 ```
 
-### Флаки-тесты и тайм-ауты
+### Flaky-тесты и тайм-ауты
 
 Flaky‑тесты автоматически перезапускаются до 2 раз с задержкой 1 секунда:
 

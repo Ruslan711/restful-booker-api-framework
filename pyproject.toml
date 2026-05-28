@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
-addopts = "--alluredir=allure-results --reruns=2 --reruns-delay=1 --timeout=60 --strict-markers"
+addopts = "--alluredir=allure-results --reruns=2 --reruns-delay=1 --timeout=60 --strict-markers -n auto"
 log_cli = true
 log_cli_level = "INFO"
 
