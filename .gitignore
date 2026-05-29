@@ -1,26 +1,7 @@
-# Python virtual environment
-venv/
-.venv/
-
-# Python cache
-__pycache__/
-*.py[cod]
-*.pyc
-.pytest_cache/
-
-# IDE
-.idea/
-.vscode/
-
-# Allure reports
-allure-results/
-allure-report/
-
-# Log files
-*.log
-
-# Environment variables
-.env
+# These are some examples of commonly ignored file patterns.
+# You should customize this list as applicable to your project.
+# Learn more about .gitignore:
+#     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
 # Node artifact files
 node_modules/
@@ -29,12 +10,21 @@ dist/
 # Compiled Java class files
 *.class
 
+# Compiled Python bytecode
+*.py[cod]
+
+# Log files
+*.log
+
 # Package files
 *.jar
-*.war
 
 # Maven
 target/
+dist/
+
+# JetBrains IDE
+.idea/
 
 # Unit test reports
 TEST*.xml
@@ -48,6 +38,7 @@ Thumbs.db
 # Applications
 *.app
 *.exe
+*.war
 
 # Large media files
 *.mp4
@@ -56,3 +47,4 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
+

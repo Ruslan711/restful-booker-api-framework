@@ -1,13 +1,10 @@
 {
   "auth": {
-    "valid": {
-      "username": "admin",
-      "password": "password123"
-    },
+    "valid": { "username": "admin", "password": "password123" },
     "expected_error": "Bad credentials"
   },
   "booking": {
-    "non_existent_id": -1,
-    "invalid_token": "invalid_token"
+    "non_existent_id": 7777,
+    "invalid_token": "12345"
   }
 }

@@ -1,5 +1,0 @@
-pytest
-requests
-faker
-allure-pytest
-pydantic
