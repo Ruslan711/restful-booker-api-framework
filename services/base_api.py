@@ -30,13 +30,15 @@ class BaseAPI:
             total=3,
             backoff_factor=0.3,
             status_forcelist=(500, 502, 503, 504),
-            allowed_methods=frozenset({
-                "GET",
-                "HEAD",
-                "OPTIONS",
-                "PUT",
-                "DELETE",
-            }),
+            allowed_methods=frozenset(
+                {
+                    "GET",
+                    "HEAD",
+                    "OPTIONS",
+                    "PUT",
+                    "DELETE",
+                }
+            ),
         )
 
         adapter = HTTPAdapter(
@@ -50,8 +52,15 @@ class BaseAPI:
 
         return session
 
-    def _attach_request(self, *, method: str, url: str, request_id: str,
-                         headers: dict[str, Any], body: Any) -> None:
+    def _attach_request(
+        self,
+        *,
+        method: str,
+        url: str,
+        request_id: str,
+        headers: dict[str, Any],
+        body: Any,
+    ) -> None:
         lines = [
             f"REQUEST_ID: {request_id}",
             f"METHOD: {method}",
@@ -122,13 +131,10 @@ class BaseAPI:
                 timeout=timeout,
                 **kwargs,
             )
-
         except requests.exceptions.Timeout as exc:
             raise ApiTimeoutError(f"Timeout: {method} {url}") from exc
-
         except requests.exceptions.ConnectionError as exc:
             raise ApiConnectionError(f"Connection error: {method} {url}") from exc
-
         except requests.exceptions.RequestException as exc:
             raise ApiError(f"Request error: {method} {url}") from exc
 
@@ -153,11 +159,11 @@ class BaseAPI:
     def post(self, path: str, **kwargs: Any) -> Response:
         return self._request("POST", path, **kwargs)
 
-    def put(self, path: str, **kwargs: Any):
+    def put(self, path: str, **kwargs: Any) -> Response:
         return self._request("PUT", path, **kwargs)
 
-    def patch(self, path: str, **kwargs: Any):
+    def patch(self, path: str, **kwargs: Any) -> Response:
         return self._request("PATCH", path, **kwargs)
 
-    def delete(self, path: str, **kwargs: Any):
+    def delete(self, path: str, **kwargs: Any) -> Response:
         return self._request("DELETE", path, **kwargs)
