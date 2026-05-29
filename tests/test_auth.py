@@ -8,4 +8,7 @@ def test_auth_valid_credentials(restful_booker_api, test_data):
 
     response, model = restful_booker_api.auth.create_token(payload)
 
+    assert response.status_code == 200
+    assert model is not None
+    assert model.token
     assert_auth_successful(response, model)
