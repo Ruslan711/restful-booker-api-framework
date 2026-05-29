@@ -1,5 +1,4 @@
 import json
-import sys
 import warnings
 from pathlib import Path
 from typing import Callable, Generator
@@ -7,14 +6,12 @@ from typing import Callable, Generator
 import allure
 import pytest
 
-PROJECT_ROOT = Path(__file__).parent.parent
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
 from config.environments import Environment, EnvironmentConfig, load_environment
 from services.restful_booker.api import RestfulBookerApi
 from services.restful_booker.auth.assertions import assert_auth_successful
 from services.restful_booker.auth.models.auth import AuthRequest
+
+PROJECT_ROOT = Path(__file__).parent.parent
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -41,8 +38,7 @@ def test_data(request: pytest.FixtureRequest) -> dict:
     env_value = request.config.getoption("--env")
     environment = Environment(env_value)
 
-    project_root = Path(__file__).parent.parent
-    test_data_path = project_root / "test_data" / f"{environment.value}.json"
+    test_data_path = PROJECT_ROOT / "test_data" / f"{environment.value}.json"
 
     with test_data_path.open(encoding="utf-8") as f:
         data = json.load(f)
