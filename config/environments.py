@@ -1,6 +1,11 @@
+import os
 from enum import StrEnum
+from pathlib import Path
 
+from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 
 class Environment(StrEnum):
@@ -15,19 +20,16 @@ class EnvironmentConfig(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="BOOKER_",
-        env_file=".env",
-        env_file_encoding="utf-8",
     )
 
 
-_URLS: dict[Environment, str] = {
-    Environment.DEV: "https://restful-booker.herokuapp.com",
-    Environment.STAGE: "https://restful-booker.herokuapp.com",
-}
-
-
 def load_environment(env: Environment) -> EnvironmentConfig:
-    if env not in _URLS:
+    """Загружает конфигурацию из переменных окружения для указанного окружения."""
+    if env not in (Environment.DEV, Environment.STAGE):
         raise ValueError(f"Неизвестное окружение: {env!r}")
 
-    return EnvironmentConfig(booker_url=_URLS[env])
+    return EnvironmentConfig(
+        booker_url=os.getenv("BOOKER_URL"),
+        booker_username=os.getenv("BOOKER_USERNAME"),
+        booker_password=os.getenv("BOOKER_PASSWORD"),
+    )
