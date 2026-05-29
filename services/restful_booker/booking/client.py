@@ -1,4 +1,5 @@
-from typing import List, Tuple
+from typing import Tuple
+
 from requests import Response
 
 from services.base_api import BaseAPI
@@ -6,6 +7,7 @@ from services.restful_booker.booking.models.booking import (
     Booking,
     BookingCreateResponse,
 )
+from services.restful_booker.booking.models.booking_list import BookingListItem
 from services.restful_booker.booking.models.booking_patch import BookingPatch
 
 
@@ -38,13 +40,15 @@ class BookingClient(BaseAPI):
     def list(
         self,
         validate: bool = True,
-    ) -> Tuple[Response, List[int] | None]:
+    ) -> Tuple[Response, list[BookingListItem] | None]:
         response = self.get("/booking")
 
         if not validate:
             return response, None
 
-        return response, [item["bookingid"] for item in response.json()]
+        # Валидация через pydantic модель
+        items = [BookingListItem.model_validate(item) for item in response.json()]
+        return response, items
 
     def update_put(
         self,
@@ -78,6 +82,6 @@ class BookingClient(BaseAPI):
     def remove(
         self,
         booking_id: int,
-        validate: bool = True,
     ) -> Tuple[Response, None]:
-        return self.delete(f"/booking/{booking_id}"), None
+        response = self.delete(f"/booking/{booking_id}")
+        return response, None
