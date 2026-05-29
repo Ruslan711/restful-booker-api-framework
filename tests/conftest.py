@@ -3,10 +3,13 @@ import warnings
 from pathlib import Path
 from typing import Callable, Generator
 
+import allure
 import pytest
 
 from config.environments import Environment, EnvironmentConfig, load_environment
 from services.restful_booker.api import RestfulBookerApi
+from services.restful_booker.auth.assertions import assert_auth_successful
+from services.restful_booker.auth.models.auth import AuthRequest
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -46,6 +49,19 @@ def restful_booker_api(env_config: EnvironmentConfig) -> RestfulBookerApi:
     return RestfulBookerApi(env_config)
 
 
+@pytest.fixture(scope="session")
+def set_token(restful_booker_api: RestfulBookerApi, test_data: dict) -> str:
+    """Создаёт токен для авторизованных операций и возвращает его значение."""
+    creds = test_data["auth"]["valid"]
+    payload = AuthRequest(**creds)
+
+    with allure.step("Создание токена авторизации для тестов"):
+        response, model = restful_booker_api.auth.create_token(payload)
+
+    assert_auth_successful(response, model)
+    return model.token  # type: ignore[union-attr]
+
+
 @pytest.fixture
 def cleanup() -> Generator[list[Callable[[], None]], None, None]:
     """
@@ -59,7 +75,6 @@ def cleanup() -> Generator[list[Callable[[], None]], None, None]:
 
     for task in reversed(tasks):
         try:
-            print(f"Cleaning up: {task}")
             task()
         except Exception as exc:
             errors.append(exc)

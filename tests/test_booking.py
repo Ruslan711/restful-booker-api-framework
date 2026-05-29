@@ -5,7 +5,7 @@ from services.restful_booker.booking.assertions import (
 from services.restful_booker.booking.models.booking import Booking, BookingDates
 
 
-def test_booking_create_and_cleanup(restful_booker_api, cleanup):
+def test_booking_create_and_cleanup(restful_booker_api, cleanup, set_token):
     payload = Booking(
         firstname="John",
         lastname="Doe",
@@ -23,7 +23,7 @@ def test_booking_create_and_cleanup(restful_booker_api, cleanup):
     booking_id = model.bookingid
 
     cleanup.append(
-        lambda: restful_booker_api.booking.remove(booking_id)
+        lambda: restful_booker_api.booking.remove(booking_id, token=set_token, validate=False)
     )
 
     assert_booking_created(response, model, payload)
