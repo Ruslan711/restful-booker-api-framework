@@ -1,11 +1,10 @@
-import os
 from enum import StrEnum
 from pathlib import Path
 
-from dotenv import load_dotenv
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-load_dotenv(Path(__file__).parent.parent / ".env")
+_ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
 
 
 class Environment(StrEnum):
@@ -13,23 +12,27 @@ class Environment(StrEnum):
     STAGE = "stage"
 
 
+_URLS: dict[Environment, str] = {
+    Environment.DEV: "https://restful-booker.herokuapp.com",
+    Environment.STAGE: "https://restful-booker.herokuapp.com",
+}
+
+
 class EnvironmentConfig(BaseSettings):
     booker_url: str
-    booker_username: str
-    booker_password: str
+    booker_username: str = Field(validation_alias="BOOKER_USERNAME")
+    booker_password: str = Field(validation_alias="BOOKER_PASSWORD")
 
     model_config = SettingsConfigDict(
-        env_prefix="BOOKER_",
+        env_file=_ENV_FILE,
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
 
 
 def load_environment(env: Environment) -> EnvironmentConfig:
-    """Загружает конфигурацию из переменных окружения для указанного окружения."""
-    if env not in (Environment.DEV, Environment.STAGE):
+    """Конфиг для выбранного окружения: URL из _URLS, креды из .env / переменных."""
+    if env not in _URLS:
         raise ValueError(f"Неизвестное окружение: {env!r}")
 
-    return EnvironmentConfig(
-        booker_url=os.getenv("BOOKER_URL"),
-        booker_username=os.getenv("BOOKER_USERNAME"),
-        booker_password=os.getenv("BOOKER_PASSWORD"),
-    )
+    return EnvironmentConfig(booker_url=_URLS[env])

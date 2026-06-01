@@ -11,31 +11,28 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         "--env",
         action="store",
         default=Environment.DEV.value,
-        choices=[env.value for env in Environment],
-        help="Target environment for API tests",
+        choices=[e.value for e in Environment],
+        help="Target environment for API tests: dev or stage",
     )
 
 
 @pytest.fixture(scope="session")
 def env(request: pytest.FixtureRequest) -> Environment:
     """Выбранное окружение из опции --env."""
-    env_value = request.config.getoption("--env")
-    return Environment(env_value)
+    return Environment(request.config.getoption("--env"))
 
 
 @pytest.fixture(scope="session")
 def env_config(env: Environment) -> EnvironmentConfig:
     """Конфигурация выбранного окружения для всех тестов."""
     config = load_environment(env)
-
     print(f"\n[pytest] Running tests on environment: {env.value} ({config.booker_url})")
-
     return config
 
 
 @pytest.fixture(scope="session")
 def api_client(env_config: EnvironmentConfig) -> APIClient:
-    """API клиент с URL из конфигурации окружения."""
+    """API-клиент с URL из конфигурации окружения."""
     return APIClient(env_config.booker_url)
 
 
