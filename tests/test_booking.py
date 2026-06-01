@@ -18,18 +18,20 @@ def test_booking_create_and_cleanup(restful_booker_api, cleanup, set_token):
         additionalneeds="Breakfast",
     )
 
-    response, model = restful_booker_api.booking.create(payload)
-
-    booking_id = model.bookingid
+    response, validated = restful_booker_api.booking.create(payload)
 
     cleanup.append(
-        lambda: restful_booker_api.booking.remove(booking_id, token=set_token, validate=False)
+        lambda: restful_booker_api.booking.remove(
+            validated.bookingid,
+            token=set_token,
+        )
     )
 
-    assert_booking_created(response, model, payload)
+    assert_booking_created(response, validated, payload)
 
 
 def test_booking_not_found(restful_booker_api, test_data):
+    """Запрос несуществующего бронирования возвращает 404."""
     booking_id = test_data["booking"]["non_existent_id"]
 
     response, _ = restful_booker_api.booking.get_by_id(

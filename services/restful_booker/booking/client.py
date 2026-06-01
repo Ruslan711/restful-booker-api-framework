@@ -1,5 +1,3 @@
-from typing import Any
-
 from requests import Response
 
 from services.base_api import BaseAPI
@@ -20,15 +18,11 @@ class BookingClient(BaseAPI):
         """Создать бронирование."""
         response = self.post("/booking", json=booking.model_dump())
 
-        if validate:
-            assert response.status_code == 200
+        if not validate:
+            return response, None
 
-        model = (
-            BookingCreateResponse.model_validate(response.json())
-            if validate
-            else None
-        )
-
+        assert response.status_code == 200
+        model = BookingCreateResponse.model_validate_json(response.text)
         return response, model
 
     def get_by_id(
@@ -39,11 +33,10 @@ class BookingClient(BaseAPI):
         """Получить бронирование по ID."""
         response = self.get(f"/booking/{booking_id}")
 
-        if validate:
-            assert response.status_code == 200
+        if not validate:
+            return response, None
 
-        model = Booking.model_validate(response.json()) if validate else None
-
+        model = Booking.model_validate_json(response.text)
         return response, model
 
     def remove(

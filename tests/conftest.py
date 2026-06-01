@@ -64,20 +64,13 @@ def set_token(restful_booker_api: RestfulBookerApi, test_data: dict) -> str:
 
 @pytest.fixture
 def cleanup() -> Generator[list[Callable[[], None]], None, None]:
-    """
-    Уборка ресурсов после теста (LIFO порядок).
-    Используется для удаления созданных сущностей.
-    """
     tasks: list[Callable[[], None]] = []
     yield tasks
-
     errors: list[Exception] = []
-
     for task in reversed(tasks):
         try:
             task()
         except Exception as exc:
             errors.append(exc)
-
     if errors:
         warnings.warn(f"Cleanup errors: {errors}")
