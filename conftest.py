@@ -36,7 +36,7 @@ def test_data(request: pytest.FixtureRequest) -> dict:
     env_value = request.config.getoption("--env")
     environment = Environment(env_value)
 
-    project_root = Path(__file__).parent.parent
+    project_root = Path(__file__).parent
     test_data_path = project_root / "test_data" / f"{environment.value}.json"
 
     with test_data_path.open(encoding="utf-8") as f:

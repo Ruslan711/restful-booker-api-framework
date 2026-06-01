@@ -1,5 +1,6 @@
 from services.restful_booker.booking.assertions import (
     assert_booking_created,
+    assert_booking_deleted,
     assert_not_found,
 )
 from services.restful_booker.booking.models.booking import Booking, BookingDates
@@ -20,12 +21,14 @@ def test_booking_create_and_cleanup(restful_booker_api, cleanup, set_token):
 
     response, validated = restful_booker_api.booking.create(payload)
 
-    cleanup.append(
-        lambda: restful_booker_api.booking.remove(
+    def delete_booking() -> None:
+        delete_response, _ = restful_booker_api.booking.remove(
             validated.bookingid,
             token=set_token,
         )
-    )
+        assert_booking_deleted(delete_response)
+
+    cleanup.append(delete_booking)
 
     assert_booking_created(response, validated, payload)
 

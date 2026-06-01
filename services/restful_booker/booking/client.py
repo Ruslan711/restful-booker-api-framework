@@ -21,7 +21,6 @@ class BookingClient(BaseAPI):
         if not validate:
             return response, None
 
-        assert response.status_code == 200
         model = BookingCreateResponse.model_validate_json(response.text)
         return response, model
 
@@ -43,17 +42,10 @@ class BookingClient(BaseAPI):
         self,
         booking_id: int,
         token: str | None = None,
-        validate: bool = True,
     ) -> tuple[Response, None]:
-        """Удалить бронирование."""
-        headers = {"Cookie": f"token={token}"} if token else None
-
+        """Удалить бронирование. Проверка статуса — в assertions-слое."""
         response = self.delete(
             f"/booking/{booking_id}",
-            headers=headers,
+            headers={"Cookie": f"token={token}"} if token else None,
         )
-
-        if validate:
-            assert response.status_code in (200, 201, 204)
-
         return response, None

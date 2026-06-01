@@ -72,3 +72,12 @@ def assert_forbidden(response: Response) -> None:
 def assert_not_found(response: Response) -> None:
     """Статус 404 Not Found."""
     assert_status_code(response, 404)
+
+
+@allure.step("Проверка, что бронирование удалено")
+def assert_booking_deleted(response: Response) -> None:
+    """Статус успешного удаления (200, 201 или 204)."""
+    actual = response.status_code
+    assert actual in (200, 201, 204), (
+        f"Ожидали статус удаления 200/201/204, но получили {actual}"
+    )
