@@ -1,5 +1,4 @@
 from typing import Any
-
 from requests import Response
 
 from services.base_api import BaseAPI
@@ -21,9 +20,6 @@ class BookingClient(BaseAPI):
         """Создать бронирование."""
         response = self.post("/booking", json=booking.model_dump())
 
-        if validate:
-            assert response.status_code == 200
-
         model = (
             BookingCreateResponse.model_validate(response.json())
             if validate
@@ -40,9 +36,6 @@ class BookingClient(BaseAPI):
         """Получить бронирование по ID."""
         response = self.get(f"/booking/{booking_id}")
 
-        if validate:
-            assert response.status_code == 200
-
         model = Booking.model_validate(response.json()) if validate else None
 
         return response, model
@@ -53,9 +46,6 @@ class BookingClient(BaseAPI):
     ) -> tuple[Response, list[BookingId] | None]:
         """Получить список бронирований."""
         response = self.get("/booking")
-
-        if validate:
-            assert response.status_code == 200
 
         model = (
             [BookingId.model_validate(item) for item in response.json()]
@@ -81,9 +71,6 @@ class BookingClient(BaseAPI):
             headers=headers,
         )
 
-        if validate:
-            assert response.status_code == 200
-
         model = Booking.model_validate(response.json()) if validate else None
 
         return response, model
@@ -104,9 +91,6 @@ class BookingClient(BaseAPI):
             headers=headers,
         )
 
-        if validate:
-            assert response.status_code == 200
-
         model = Booking.model_validate(response.json()) if validate else None
 
         return response, model
@@ -115,7 +99,6 @@ class BookingClient(BaseAPI):
         self,
         booking_id: int,
         token: str | None = None,
-        validate: bool = True,
     ) -> tuple[Response, None]:
         """Удалить бронирование."""
         headers = {"Cookie": f"token={token}"} if token else None
@@ -124,8 +107,5 @@ class BookingClient(BaseAPI):
             f"/booking/{booking_id}",
             headers=headers,
         )
-
-        if validate:
-            assert response.status_code in (200, 201, 204)
 
         return response, None

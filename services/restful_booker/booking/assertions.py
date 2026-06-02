@@ -1,5 +1,4 @@
 from typing import Any, Mapping
-
 import allure
 from requests import Response
 
@@ -72,3 +71,28 @@ def assert_forbidden(response: Response) -> None:
 def assert_not_found(response: Response) -> None:
     """Статус 404 Not Found."""
     assert_status_code(response, 404)
+
+
+@allure.step("Проверка, что бронирование получено (GET)")
+def assert_booking_get(
+    response: Response,
+    validated: Booking | None,
+    expected_data: Booking | Mapping[str, Any],
+) -> None:
+    """Статус 200 и тело бронирования совпадает с ожидаемым."""
+    assert_status_code(response, 200)
+
+    assert validated is not None, "Ожидали валидированную модель Booking, но получили None"
+
+    expected = _booking_to_dict(expected_data)
+    actual = validated.model_dump()
+    assert actual == expected, "Данные полученного бронирования не совпадают с ожидаемыми"
+
+
+@allure.step("Проверка, что бронирование удалено")
+def assert_booking_deleted(response: Response) -> None:
+    """Статус успешного удаления (200, 201 или 204)."""
+    actual = response.status_code
+    assert actual in (200, 201, 204), (
+        f"Ожидали статус удаления 200/201/204, но получили {actual}"
+    )

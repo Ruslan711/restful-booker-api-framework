@@ -4,7 +4,7 @@
     "expected_error": "Bad credentials"
   },
   "booking": {
-    "non_existent_id": 7777,
+    "non_existent_id": 2147483647,
     "invalid_token": "12345"
   }
 }
