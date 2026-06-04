@@ -1,7 +1,7 @@
 from enum import StrEnum
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, HttpUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
@@ -19,7 +19,8 @@ _URLS: dict[Environment, str] = {
 
 
 class EnvironmentConfig(BaseSettings):
-    booker_url: str
+    booker_url: HttpUrl
+
     booker_username: str = Field(validation_alias="BOOKER_USERNAME")
     booker_password: str = Field(validation_alias="BOOKER_PASSWORD")
 

@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 from typing import Optional
+
+from pydantic import BaseModel
 
 
 class BookingDates(BaseModel):
@@ -7,7 +8,7 @@ class BookingDates(BaseModel):
     checkout: str
 
 
-class BookingRequest(BaseModel):
+class Booking(BaseModel):
     firstname: str
     lastname: str
     totalprice: int
@@ -16,5 +17,6 @@ class BookingRequest(BaseModel):
     additionalneeds: Optional[str] = None
 
 
-class BookingResponse(BaseModel):
+class BookingCreateResponse(BaseModel):
     bookingid: int
+    booking: Booking
