@@ -27,5 +27,5 @@ def assert_auth_failed(response: Response, expected_error: str) -> None:
     actual_reason = body.get("reason")
 
     assert actual_reason == expected_error, (
-        f"Ожидали ошибку '{expected_error}', но получили '{actual_reason}'"
+        f"Ожидали сообщение об ошибке '{expected_error}', но получили '{actual_reason}'"
     )
