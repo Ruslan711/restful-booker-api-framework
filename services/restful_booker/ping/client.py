@@ -13,7 +13,4 @@ class PingClient(BaseAPI):
     def ping(self, validate: bool = True) -> Tuple[Response, Any]:
         response = self.get("/ping")
 
-        if validate:
-            assert response.status_code == 201
-
         return response, None

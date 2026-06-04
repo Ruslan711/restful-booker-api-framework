@@ -2,6 +2,8 @@ pytest>=8.0.0
 requests>=2.31.0
 pydantic>=2.5.0
 pydantic-settings>=2.1.0
+python-dotenv
+faker
 allure-pytest>=2.13.0
 pytest-rerunfailures>=13.0
 pytest-timeout>=2.2.0
