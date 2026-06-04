@@ -1,26 +1,15 @@
 from enum import StrEnum
-from typing import Optional
+from pathlib import Path
 
+from pydantic import Field, HttpUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
 
 
 class Environment(StrEnum):
-    """Доступные окружения для тестов."""
     DEV = "dev"
     STAGE = "stage"
-
-
-class EnvironmentConfig(BaseSettings):
-    """Конфигурация для API-тестов."""
-    booker_url: str
-    booker_username: Optional[str] = None
-    booker_password: Optional[str] = None
-
-    model_config = SettingsConfigDict(
-        env_prefix="BOOKER_",
-        env_file=".env",
-        env_file_encoding="utf-8",
-    )
 
 
 _URLS: dict[Environment, str] = {
@@ -29,8 +18,21 @@ _URLS: dict[Environment, str] = {
 }
 
 
+class EnvironmentConfig(BaseSettings):
+    booker_url: HttpUrl
+
+    booker_username: str = Field(validation_alias="BOOKER_USERNAME")
+    booker_password: str = Field(validation_alias="BOOKER_PASSWORD")
+
+    model_config = SettingsConfigDict(
+        env_file=_ENV_FILE,
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+
 def load_environment(env: Environment) -> EnvironmentConfig:
-    """Загружает конфигурацию для выбранного окружения."""
+    """Конфиг для выбранного окружения: URL из _URLS, креды из .env / переменных."""
     if env not in _URLS:
         raise ValueError(f"Неизвестное окружение: {env!r}")
 

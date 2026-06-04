@@ -1,78 +1,57 @@
-# =========================
 # Python
-# =========================
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+*.so
 
-# Virtual environments
+# Virtual environment
 .venv/
 venv/
 ENV/
 env/
 
-# =========================
 # Environment variables
-# =========================
 .env
 .env.*
 
-# =========================
 # Pytest
-# =========================
 .pytest_cache/
 .cache/
 test-results/
 tests/__pycache__/
 
-# =========================
-# Coverage reports
-# =========================
+# Coverage
 htmlcov/
 .coverage
 .coverage.*
 coverage.xml
 
-# =========================
-# Allure reports
-# =========================
+# Allure
 allure-results/
 allure-report/
 
-# =========================
 # Logs
-# =========================
 *.log
 
-# =========================
-# IDE / editors
-# =========================
+# IDE
 .idea/
 .vscode/
 *.swp
 *.swo
 
-# =========================
-# OS files
-# =========================
+# OS
 .DS_Store
 Thumbs.db
 
-# =========================
-# Jupyter (если вдруг будет)
-# =========================
+# Jupyter
 .ipynb_checkpoints/
 
-# =========================
-# Build / packaging
-# =========================
+# Build
 dist/
 build/
 *.egg-info/
 
-# =========================
 # misc
-# =========================
 *.tmp
 *.bak
