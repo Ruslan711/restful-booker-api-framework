@@ -1,9 +1,12 @@
+from typing import Any
+
 from requests import Response
 
 from services.base_api import BaseAPI
 from services.restful_booker.booking.models.booking import (
     Booking,
     BookingCreateResponse,
+    BookingId,
 )
 
 
@@ -18,10 +21,12 @@ class BookingClient(BaseAPI):
         """Создать бронирование."""
         response = self.post("/booking", json=booking.model_dump())
 
-        if not validate:
-            return response, None
+        model = (
+            BookingCreateResponse.model_validate(response.json())
+            if validate
+            else None
+        )
 
-        model = BookingCreateResponse.model_validate_json(response.text)
         return response, model
 
     def get_by_id(
@@ -32,10 +37,63 @@ class BookingClient(BaseAPI):
         """Получить бронирование по ID."""
         response = self.get(f"/booking/{booking_id}")
 
-        if not validate:
-            return response, None
+        model = Booking.model_validate(response.json()) if validate else None
 
-        model = Booking.model_validate_json(response.text)
+        return response, model
+
+    def list(
+        self,
+        validate: bool = True,
+    ) -> tuple[Response, list[BookingId] | None]:
+        """Получить список бронирований."""
+        response = self.get("/booking")
+
+        model = (
+            [BookingId.model_validate(item) for item in response.json()]
+            if validate
+            else None
+        )
+
+        return response, model
+
+    def update_put(
+        self,
+        booking_id: int,
+        booking: Booking,
+        token: str | None = None,
+        validate: bool = True,
+    ) -> tuple[Response, Booking | None]:
+        """Полное обновление бронирования."""
+        headers = {"Cookie": f"token={token}"} if token else None
+
+        response = self.put(
+            f"/booking/{booking_id}",
+            json=booking.model_dump(),
+            headers=headers,
+        )
+
+        model = Booking.model_validate(response.json()) if validate else None
+
+        return response, model
+
+    def update_patch(
+        self,
+        booking_id: int,
+        partial_data: dict[str, Any],
+        token: str | None = None,
+        validate: bool = True,
+    ) -> tuple[Response, Booking | None]:
+        """Частичное обновление бронирования."""
+        headers = {"Cookie": f"token={token}"} if token else None
+
+        response = self.patch(
+            f"/booking/{booking_id}",
+            json=partial_data,
+            headers=headers,
+        )
+
+        model = Booking.model_validate(response.json()) if validate else None
+
         return response, model
 
     def remove(

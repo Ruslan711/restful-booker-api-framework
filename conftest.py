@@ -11,6 +11,8 @@ from services.restful_booker.api import RestfulBookerApi
 from services.restful_booker.auth.assertions import assert_auth_successful
 from services.restful_booker.auth.models.auth import AuthRequest
 
+PROJECT_ROOT = Path(__file__).parent
+
 
 def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addoption(
@@ -27,7 +29,9 @@ def env_config(request: pytest.FixtureRequest) -> EnvironmentConfig:
     """Конфигурация выбранного окружения для всех тестов."""
     env_value = request.config.getoption("--env")
     environment = Environment(env_value)
-    return load_environment(environment)
+    config = load_environment(environment)
+    print(f"\n[pytest] Running tests on environment: {environment.value} ({config.booker_url})")
+    return config
 
 
 @pytest.fixture(scope="session")
@@ -36,27 +40,26 @@ def test_data(request: pytest.FixtureRequest) -> dict:
     env_value = request.config.getoption("--env")
     environment = Environment(env_value)
 
-    project_root = Path(__file__).parent
-    test_data_path = project_root / "test_data" / f"{environment.value}.json"
+    test_data_path = PROJECT_ROOT / "test_data" / f"{environment.value}.json"
 
     with test_data_path.open(encoding="utf-8") as f:
         return json.load(f)
 
 
 @pytest.fixture(scope="session")
-def restful_booker_api(env_config: EnvironmentConfig) -> RestfulBookerApi:
+def api(env_config: EnvironmentConfig) -> RestfulBookerApi:
     """Фасад для работы с Restful Booker API."""
     return RestfulBookerApi(env_config)
 
 
 @pytest.fixture(scope="session")
-def set_token(restful_booker_api: RestfulBookerApi, test_data: dict) -> str:
+def set_token(api: RestfulBookerApi, test_data: dict) -> str:
     """Создаёт токен для авторизованных операций и возвращает его значение."""
     creds = test_data["auth"]["valid"]
     payload = AuthRequest(**creds)
 
     with allure.step("Создание токена авторизации для тестов"):
-        response, model = restful_booker_api.auth.create_token(payload)
+        response, model = api.auth.create_token(payload)
 
     assert_auth_successful(response, model)
     return model.token  # type: ignore[union-attr]
@@ -64,6 +67,10 @@ def set_token(restful_booker_api: RestfulBookerApi, test_data: dict) -> str:
 
 @pytest.fixture
 def cleanup() -> Generator[list[Callable[[], None]], None, None]:
+    """
+    Универсальная фикстура cleanup:
+    накопленные задачи выполняются после теста в обратном порядке.
+    """
     tasks: list[Callable[[], None]] = []
     yield tasks
     errors: list[Exception] = []
