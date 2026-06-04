@@ -1,5 +1,5 @@
-from typing import Any
 from datetime import datetime, timedelta
+from typing import Any
 
 import allure
 from faker import Faker
@@ -172,7 +172,6 @@ def test_delete_booking(api, set_token, cleanup):
     assert_booking_deleted(delete_response)
     assert_not_found(get_response)
 
-    # Удаление прошло успешно — отменяем cleanup на повторное удаление.
     cleanup.clear()
 
 

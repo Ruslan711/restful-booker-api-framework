@@ -1,11 +1,9 @@
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping
+
 import allure
 from requests import Response
 
-from services.restful_booker.booking.models.booking import (
-    Booking,
-    BookingCreateResponse,
-)
+from services.restful_booker.booking.models.booking import Booking, BookingCreateResponse
 from utils.assertions import assert_status_code
 
 
@@ -16,74 +14,61 @@ def _booking_to_dict(booking: Booking | Mapping[str, Any]) -> dict:
     return dict(booking)
 
 
-def _assert_dicts_equal(actual: dict, expected: dict, message: str) -> None:
-    assert actual == expected, (
-        f"{message}\nExpected: {expected}\nActual: {actual}"
-    )
-
-
-@allure.step("Проверка: бронирование создано")
+@allure.step("Проверка, что бронирование создано")
 def assert_booking_created(
     response: Response,
     validated: BookingCreateResponse | None,
     expected_data: Booking | Mapping[str, Any],
 ) -> None:
+    """Статус 200 и тело созданного бронирования совпадает с expected_data."""
     assert_status_code(response, 200)
 
-    assert validated is not None, "BookingCreateResponse не должен быть None"
+    assert validated is not None, "Ожидали валидированную модель BookingCreateResponse, но получили None"
 
     expected = _booking_to_dict(expected_data)
     actual = validated.booking.model_dump()
 
-    _assert_dicts_equal(
-        actual=actual,
-        expected=expected,
-        message="Данные созданного бронирования не совпадают",
-    )
+    assert actual == expected, "Данные созданного бронирования не совпадают с ожидаемыми"
 
 
-@allure.step("Проверка: бронирование обновлено")
+@allure.step("Проверка, что бронирование обновлено")
 def assert_booking_updated(
     response: Response,
     validated: Booking | None,
     expected_data: Booking | Mapping[str, Any],
 ) -> None:
+    """Статус 200 и тело обновлённого бронирования совпадает с expected_data."""
     assert_status_code(response, 200)
 
-    assert validated is not None, "Booking не должен быть None"
+    assert validated is not None, "Ожидали валидированную модель Booking, но получили None"
 
     expected = _booking_to_dict(expected_data)
     actual = validated.model_dump()
 
-    _assert_dicts_equal(
-        actual=actual,
-        expected=expected,
-        message="Данные обновлённого бронирования не совпадают",
-    )
+    assert actual == expected, "Данные обновлённого бронирования не совпадают с ожидаемыми"
 
 
-@allure.step("Проверка: бронирование в списке")
+@allure.step("Проверка, что бронирование присутствует в списке")
 def assert_booking_in_list(
     response: Response,
-    validated: Sequence[int] | None,
+    validated: list[int] | None,
     booking_id: int,
 ) -> None:
+    """Статус 200 и booking_id присутствует в списке ID."""
     assert_status_code(response, 200)
 
-    assert validated is not None, "Список ID не должен быть None"
+    assert validated is not None, "Ожидали список ID бронирований, но получили None"
 
-    assert booking_id in validated, (
-        f"booking_id={booking_id} отсутствует в списке: {list(validated)}"
-    )
+    assert booking_id in validated, f"Ожидали, что booking_id={booking_id} будет в списке, но его там нет"
 
 
-@allure.step("Проверка: Forbidden (403)")
+@allure.step("Проверка, что доступ запрещён (403 Forbidden)")
 def assert_forbidden(response: Response) -> None:
-    """Ожидаем HTTP 403 Forbidden."""
+    """Статус 403 Forbidden."""
     assert_status_code(response, 403)
 
 
-@allure.step("Проверка: Not Found (404)")
+@allure.step("Проверка, что ресурс не найден (404 Not Found)")
 def assert_not_found(response: Response) -> None:
     """Статус 404 Not Found."""
     assert_status_code(response, 404)

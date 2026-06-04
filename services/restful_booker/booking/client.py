@@ -1,4 +1,5 @@
 from typing import Any
+
 from requests import Response
 
 from services.base_api import BaseAPI
@@ -100,12 +101,9 @@ class BookingClient(BaseAPI):
         booking_id: int,
         token: str | None = None,
     ) -> tuple[Response, None]:
-        """Удалить бронирование."""
-        headers = {"Cookie": f"token={token}"} if token else None
-
+        """Удалить бронирование. Проверка статуса — в assertions-слое."""
         response = self.delete(
             f"/booking/{booking_id}",
-            headers=headers,
+            headers={"Cookie": f"token={token}"} if token else None,
         )
-
         return response, None

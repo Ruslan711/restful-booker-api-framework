@@ -41,6 +41,7 @@ def test_data(request: pytest.FixtureRequest) -> dict:
     environment = Environment(env_value)
 
     test_data_path = PROJECT_ROOT / "test_data" / f"{environment.value}.json"
+
     with test_data_path.open(encoding="utf-8") as f:
         return json.load(f)
 
@@ -72,13 +73,11 @@ def cleanup() -> Generator[list[Callable[[], None]], None, None]:
     """
     tasks: list[Callable[[], None]] = []
     yield tasks
-
     errors: list[Exception] = []
     for task in reversed(tasks):
         try:
             task()
         except Exception as exc:
             errors.append(exc)
-
     if errors:
         warnings.warn(f"Cleanup errors: {errors}")
