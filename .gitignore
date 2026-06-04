@@ -8,16 +8,24 @@ __pycache__/
 # Virtual environment
 .venv/
 venv/
+ENV/
+env/
 
 # Environment variables
 .env
-
-# IDE
-.idea/
+.env.*
 
 # Pytest
 .pytest_cache/
 .cache/
+test-results/
+tests/__pycache__/
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
 
 # Allure
 allure-results/
@@ -26,11 +34,24 @@ allure-report/
 # Logs
 *.log
 
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
 # OS
 .DS_Store
 Thumbs.db
 
-# Coverage
-htmlcov/
-.coverage
-.coverage.*
+# Jupyter
+.ipynb_checkpoints/
+
+# Build
+dist/
+build/
+*.egg-info/
+
+# misc
+*.tmp
+*.bak

@@ -6,9 +6,8 @@ from services.base_api import BaseAPI
 from services.restful_booker.booking.models.booking import (
     Booking,
     BookingCreateResponse,
-    BookingId,
 )
-
+from services.restful_booker.booking.models.booking_list import BookingListItem
 
 class BookingClient(BaseAPI):
     """Клиент для работы с бронированиями."""
@@ -21,12 +20,10 @@ class BookingClient(BaseAPI):
         """Создать бронирование."""
         response = self.post("/booking", json=booking.model_dump())
 
-        model = (
-            BookingCreateResponse.model_validate(response.json())
-            if validate
-            else None
-        )
+        if not validate:
+            return response, None
 
+        model = BookingCreateResponse.model_validate_json(response.text)
         return response, model
 
     def get_by_id(
@@ -37,24 +34,24 @@ class BookingClient(BaseAPI):
         """Получить бронирование по ID."""
         response = self.get(f"/booking/{booking_id}")
 
-        model = Booking.model_validate(response.json()) if validate else None
+        if not validate:
+            return response, None
 
+        model = Booking.model_validate_json(response.text)
         return response, model
 
     def list(
         self,
         validate: bool = True,
-    ) -> tuple[Response, list[BookingId] | None]:
+    ) -> tuple[Response, list[BookingListItem] | None]:
         """Получить список бронирований."""
         response = self.get("/booking")
 
-        model = (
-            [BookingId.model_validate(item) for item in response.json()]
-            if validate
-            else None
-        )
+        if not validate:
+            return response, None
 
-        return response, model
+        items = [BookingListItem.model_validate(item) for item in response.json()]
+        return response, items
 
     def update_put(
         self,
@@ -72,8 +69,10 @@ class BookingClient(BaseAPI):
             headers=headers,
         )
 
-        model = Booking.model_validate(response.json()) if validate else None
+        if not validate:
+            return response, None
 
+        model = Booking.model_validate_json(response.text)
         return response, model
 
     def update_patch(
@@ -92,8 +91,10 @@ class BookingClient(BaseAPI):
             headers=headers,
         )
 
-        model = Booking.model_validate(response.json()) if validate else None
+        if not validate:
+            return response, None
 
+        model = Booking.model_validate_json(response.text)
         return response, model
 
     def remove(
