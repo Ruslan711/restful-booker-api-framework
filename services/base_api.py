@@ -103,7 +103,8 @@ class BaseAPI:
         )
 
     def _request(self, method: str, path: str, **kwargs: Any) -> Response:
-        url = f"{self._env_config.booker_url}{path}"
+        base = str(self._env_config.booker_url).rstrip("/")
+        url = f"{base}{path}"
         request_id = uuid.uuid4().hex
 
         headers = kwargs.pop("headers", {}) or {}
