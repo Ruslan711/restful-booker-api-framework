@@ -1,3 +1,4 @@
+import pytest
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -47,6 +48,7 @@ def _cleanup_booking(api, booking_id: int, token: str) -> None:
     assert_booking_deleted(delete_response)
 
 
+@pytest.mark.regression
 @allure.title("Создание брони со всеми полями")
 def test_create_booking_all_params(api, set_token, cleanup):
     new_booking = _make_booking(with_additional=True)
@@ -55,9 +57,11 @@ def test_create_booking_all_params(api, set_token, cleanup):
         response, validated = api.booking.create(new_booking, validate=True)
         cleanup.append(lambda: _cleanup_booking(api, validated.bookingid, set_token))
 
-    assert_booking_created(response, validated, new_booking)
+    with allure.step("Проверить, что бронь создана"):
+        assert_booking_created(response, validated, new_booking)
 
 
+@pytest.mark.smoke
 @allure.title("Создание брони с минимальным набором полей")
 def test_create_booking_minimal(api, set_token, cleanup):
     new_booking = _make_booking(with_additional=False)
@@ -66,9 +70,11 @@ def test_create_booking_minimal(api, set_token, cleanup):
         response, validated = api.booking.create(new_booking, validate=True)
         cleanup.append(lambda: _cleanup_booking(api, validated.bookingid, set_token))
 
-    assert_booking_created(response, validated, new_booking)
+    with allure.step("Проверить, что бронь создана"):
+        assert_booking_created(response, validated, new_booking)
 
 
+@pytest.mark.regression
 @allure.title("Получение брони по ID")
 def test_get_booking_by_id(api, set_token, cleanup):
     new_booking = _make_booking(with_additional=True)
@@ -80,9 +86,11 @@ def test_get_booking_by_id(api, set_token, cleanup):
     with allure.step("Получение бронирования по ID"):
         response, model = api.booking.get_by_id(created.bookingid, validate=True)
 
-    assert_booking_get(response, model, new_booking)
+    with allure.step("Проверить, что данные брони совпали"):
+        assert_booking_get(response, model, new_booking)
 
 
+@pytest.mark.regression
 @allure.title("Список бронирований содержит созданную бронь")
 def test_list_bookings_contains_created(api, set_token, cleanup):
     new_booking = _make_booking(with_additional=False)
@@ -95,9 +103,11 @@ def test_list_bookings_contains_created(api, set_token, cleanup):
         list_response, booking_ids = api.booking.list(validate=True)
 
     ids = [item.bookingid for item in booking_ids] if booking_ids is not None else []
-    assert_booking_in_list(list_response, ids, created.bookingid)
+    with allure.step("Проверить, что созданная бронь есть в списке"):
+        assert_booking_in_list(list_response, ids, created.bookingid)
 
 
+@pytest.mark.regression
 @allure.title("Полное обновление брони (PUT)")
 def test_update_booking_put(api, set_token, cleanup):
     original_booking = _make_booking(with_additional=True)
@@ -121,9 +131,11 @@ def test_update_booking_put(api, set_token, cleanup):
             validate=True,
         )
 
-    assert_booking_updated(response, model, updated_booking)
+    with allure.step("Проверить, что бронь обновлена"):
+        assert_booking_updated(response, model, updated_booking)
 
 
+@pytest.mark.regression
 @allure.title("Частичное обновление брони (PATCH)")
 def test_update_booking_patch(api, set_token, cleanup):
     original_booking = _make_booking(with_additional=True)
@@ -146,9 +158,11 @@ def test_update_booking_patch(api, set_token, cleanup):
         )
 
     expected = original_booking.model_copy(update=patch_payload)
-    assert_booking_updated(response, model, expected)
+    with allure.step("Проверить, что бронь обновлена"):
+        assert_booking_updated(response, model, expected)
 
 
+@pytest.mark.regression
 @allure.title("Удаление брони")
 def test_delete_booking(api, set_token, cleanup):
     new_booking = _make_booking(with_additional=False)
@@ -169,21 +183,25 @@ def test_delete_booking(api, set_token, cleanup):
             validate=False,
         )
 
-    assert_booking_deleted(delete_response)
-    assert_not_found(get_response)
+    with allure.step("Проверить, что бронь удалена"):
+        assert_booking_deleted(delete_response)
+        assert_not_found(get_response)
 
     cleanup.clear()
 
 
+@pytest.mark.regression
 @allure.title("Запрос несуществующего бронирования")
 def test_booking_not_found(api, test_data):
     with allure.step("GET несуществующей брони"):
         booking_id = test_data["booking"]["non_existent_id"]
         response, _ = api.booking.get_by_id(booking_id, validate=False)
 
-    assert_not_found(response)
+    with allure.step("Проверить, что бронь не найдена"):
+        assert_not_found(response)
 
 
+@pytest.mark.regression
 @allure.title("Удаление без токена запрещено")
 def test_booking_forbidden_without_token(api, set_token, cleanup):
     new_booking = _make_booking(with_additional=False)
@@ -195,4 +213,5 @@ def test_booking_forbidden_without_token(api, set_token, cleanup):
     with allure.step("Попытка удаления без токена"):
         response, _ = api.booking.remove(created.bookingid)
 
-    assert_forbidden(response)
+    with allure.step("Проверить, что удаление без токена запрещено"):
+        assert_forbidden(response)

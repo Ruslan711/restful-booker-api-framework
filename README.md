@@ -69,3 +69,16 @@ ruff check .
 ```bash
 ruff check . --fix
 ```
+## Запуск в Docker
+
+Запустить Docker Desktop.
+
+docker compose up --build
+
+Отчёт лежит в папке allure-results.
+Открыть его: allure serve allure-results
+
+## GitHub Actions
+
+Если открыть pull request в main, тесты запустятся сами.
+Отчёт Allure будет во вкладке Artifacts.
