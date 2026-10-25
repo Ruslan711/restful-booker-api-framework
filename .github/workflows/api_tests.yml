@@ -24,12 +24,23 @@ jobs:
         env:
           BOOKER_USERNAME: ${{ secrets.BOOKER_USERNAME }}
           BOOKER_PASSWORD: ${{ secrets.BOOKER_PASSWORD }}
-        run: pytest -v --alluredir=allure-results
+        run: pytest -v
+
+      - name: Сборка Allure-отчёта
+        if: always()
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-jre-headless
+          curl -fsSL -o /tmp/allure.tgz https://github.com/allure-framework/allure2/releases/download/2.32.0/allure-2.32.0.tgz
+          sudo tar -xzf /tmp/allure.tgz -C /opt
+          sudo ln -sf /opt/allure-2.32.0/bin/allure /usr/local/bin/allure
+          allure generate allure-results -o allure-report --clean --single-file
 
       - name: Сохранение отчёта
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results
-          path: allure-results
+          name: allure-report
+          path: allure-report
           retention-days: 14
+          if-no-files-found: warn
