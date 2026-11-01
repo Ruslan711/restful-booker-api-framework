@@ -10,8 +10,11 @@ from services.restful_booker.auth.models.auth import AuthRequest
 
 @pytest.mark.smoke
 @allure.title("Успешная авторизация с валидными кредами")
-def test_auth_valid_credentials(api, test_data):
-    creds = test_data["auth"]["valid"]
+def test_auth_valid_credentials(api, env_config):
+    creds = {
+        "username": env_config.booker_username,
+        "password": env_config.booker_password,
+    }
 
     with allure.step("Собрать модель запроса авторизации"):
         payload = AuthRequest(**creds)
@@ -32,13 +35,12 @@ def test_auth_valid_credentials(api, test_data):
         ("неверный логин", "wrong-user", None),
     ],
 )
-def test_auth_invalid_credentials(api, test_data, case_name, username, password):
-    valid_creds = test_data["auth"]["valid"]
+def test_auth_invalid_credentials(api, env_config, test_data, case_name, username, password):
     expected_error = test_data["auth"]["expected_error"]
 
     invalid_creds = {
-        "username": username or valid_creds["username"],
-        "password": password or valid_creds["password"],
+        "username": username or env_config.booker_username,
+        "password": password or env_config.booker_password,
     }
 
     with allure.step("Собрать модель запроса с неверными данными"):

@@ -1,3 +1,4 @@
+import allure
 from typing import Any
 
 from requests import Response
@@ -23,7 +24,9 @@ class BookingClient(BaseAPI):
         if not validate:
             return response, None
 
-        model = BookingCreateResponse.model_validate_json(response.text)
+        with allure.step("Валидация ответа по схеме BookingCreateResponse"):
+            model = BookingCreateResponse.model_validate_json(response.text)
+
         return response, model
 
     def get_by_id(
@@ -37,7 +40,9 @@ class BookingClient(BaseAPI):
         if not validate:
             return response, None
 
-        model = Booking.model_validate_json(response.text)
+        with allure.step("Валидация ответа по схеме Booking"):
+            model = Booking.model_validate_json(response.text)
+
         return response, model
 
     def list(
@@ -50,7 +55,9 @@ class BookingClient(BaseAPI):
         if not validate:
             return response, None
 
-        items = [BookingListItem.model_validate(item) for item in response.json()]
+        with allure.step("Валидация ответа по схеме BookingListItem"):
+            items = [BookingListItem.model_validate(item) for item in response.json()]
+
         return response, items
 
     def update_put(
@@ -72,7 +79,9 @@ class BookingClient(BaseAPI):
         if not validate:
             return response, None
 
-        model = Booking.model_validate_json(response.text)
+        with allure.step("Валидация ответа по схеме Booking"):
+            model = Booking.model_validate_json(response.text)
+
         return response, model
 
     def update_patch(
@@ -94,7 +103,9 @@ class BookingClient(BaseAPI):
         if not validate:
             return response, None
 
-        model = Booking.model_validate_json(response.text)
+        with allure.step("Валидация ответа по схеме Booking"):
+            model = Booking.model_validate_json(response.text)
+
         return response, model
 
     def remove(
