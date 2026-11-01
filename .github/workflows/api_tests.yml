@@ -22,8 +22,8 @@ jobs:
 
       - name: Запуск тестов
         env:
-          BOOKER_USERNAME: ${{ secrets.BOOKER_USERNAME }}
-          BOOKER_PASSWORD: ${{ secrets.BOOKER_PASSWORD }}
+          BOOKER_USERNAME: ${{ secrets.BOOKER_USERNAME || 'admin' }}
+          BOOKER_PASSWORD: ${{ secrets.BOOKER_PASSWORD || 'password123' }}
         run: pytest -v
 
       - name: Сборка Allure-отчёта
