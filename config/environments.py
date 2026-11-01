@@ -21,8 +21,8 @@ _URLS: dict[Environment, str] = {
 class EnvironmentConfig(BaseSettings):
     booker_url: HttpUrl
 
-    booker_username: str = Field(validation_alias="BOOKER_USERNAME")
-    booker_password: str = Field(validation_alias="BOOKER_PASSWORD")
+    booker_username: str = Field(default="admin", validation_alias="BOOKER_USERNAME")
+    booker_password: str = Field(default="password123", validation_alias="BOOKER_PASSWORD")
 
     model_config = SettingsConfigDict(
         env_file=_ENV_FILE,

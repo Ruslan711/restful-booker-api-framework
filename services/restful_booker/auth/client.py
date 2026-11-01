@@ -1,3 +1,4 @@
+import allure
 from requests import Response
 
 from services.base_api import BaseAPI
@@ -15,5 +16,7 @@ class AuthClient(BaseAPI):
         if not validate:
             return response, None
 
-        model = AuthResponse.model_validate_json(response.text)
+        with allure.step("Валидация ответа по схеме AuthResponse"):
+            model = AuthResponse.model_validate_json(response.text)
+
         return response, model

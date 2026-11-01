@@ -1,0 +1,46 @@
+name: API tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Установка зависимостей
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Запуск тестов
+        env:
+          BOOKER_USERNAME: ${{ secrets.BOOKER_USERNAME || 'admin' }}
+          BOOKER_PASSWORD: ${{ secrets.BOOKER_PASSWORD || 'password123' }}
+        run: pytest -v
+
+      - name: Сборка Allure-отчёта
+        if: always()
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-jre-headless
+          curl -fsSL -o /tmp/allure.tgz https://github.com/allure-framework/allure2/releases/download/2.32.0/allure-2.32.0.tgz
+          sudo tar -xzf /tmp/allure.tgz -C /opt
+          sudo ln -sf /opt/allure-2.32.0/bin/allure /usr/local/bin/allure
+          allure generate allure-results -o allure-report --clean --single-file
+
+      - name: Сохранение отчёта
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
+          retention-days: 14
+          if-no-files-found: warn

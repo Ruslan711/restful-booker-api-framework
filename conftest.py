@@ -53,9 +53,12 @@ def api(env_config: EnvironmentConfig) -> RestfulBookerApi:
 
 
 @pytest.fixture(scope="session")
-def set_token(api: RestfulBookerApi, test_data: dict) -> str:
+def set_token(api: RestfulBookerApi, env_config: EnvironmentConfig) -> str:
     """Создаёт токен для авторизованных операций и возвращает его значение."""
-    creds = test_data["auth"]["valid"]
+    creds = {
+        "username": env_config.booker_username,
+        "password": env_config.booker_password,
+    }
     payload = AuthRequest(**creds)
 
     with allure.step("Создание токена авторизации для тестов"):

@@ -1,7 +1,9 @@
 services:
   tests:
     build: .
-    env_file:
-      - .env
+    environment:
+      BOOKER_USERNAME: ${BOOKER_USERNAME:-admin}
+      BOOKER_PASSWORD: ${BOOKER_PASSWORD:-password123}
     volumes:
       - ./allure-results:/app/allure-results
+      - ./allure-report:/app/allure-report

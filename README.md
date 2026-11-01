@@ -29,7 +29,7 @@ pytest --env=stage
 
 ### Allure-отчёт
 
-По умолчанию результаты тестов пишутся в папку `allure-results` (настроено в `pyproject.toml`).
+По умолчанию результаты тестов пишутся в папку `allure-results` (настроено в `pytest.ini`).
 
 Сгенерировать и открыть отчёт:
 
@@ -54,7 +54,7 @@ Flaky‑тесты автоматически перезапускаются д�
 
 - `--timeout=60`
 
-Эти опции заданы в `pyproject.toml` в секции `[tool.pytest.ini_options]`.
+Эти опции заданы в `pytest.ini`, в `addopts`. Там же параллельный запуск: `-n auto`.
 
 ### Линтинг кода (ruff)
 
@@ -69,3 +69,20 @@ ruff check .
 ```bash
 ruff check . --fix
 ```
+## Запуск в Docker
+
+Запустить Docker Desktop.
+
+docker compose up --build
+
+Файл `.env` не обязателен. Логин и пароль по умолчанию: `admin` / `password123`.
+Свои значения можно передать переменными `BOOKER_USERNAME` и `BOOKER_PASSWORD`.
+
+HTML-отчёт собирается сам и лежит в `allure-report/index.html`.
+Его можно открыть в браузере.
+Сырые результаты остаются в `allure-results`.
+
+## GitHub Actions
+
+Если открыть pull request в main, тесты запустятся сами.
+HTML-отчёт Allure будет во вкладке Artifacts, архив называется `allure-report`.
