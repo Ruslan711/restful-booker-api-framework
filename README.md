@@ -10,13 +10,30 @@
 - Удаление бронирования
 - Проверка валидации данных
 
+## Технологии
+
+- Python 3.11+
+- Pytest
+- Requests
+- Pydantic
+- Allure
+- Docker
+- GitHub Actions
+
 ## Установка зависимостей
 
 Для работы проекта нужен Python 3.11 или выше.
 
-Установи все зависимости командой:
-
 ```bash
+# Клонировать репозиторий
+git clone https://github.com/Ruslan711/restful-booker-api-framework.git
+cd restful-booker-api-framework
+
+# Создать и активировать виртуальное окружение
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Установить зависимости
 pip install -r requirements.txt
 ```
 
@@ -35,6 +52,9 @@ pytest
 
 # Stage
 pytest --env=stage
+
+# Только smoke-тесты
+pytest -m smoke
 ```
 
 ### Allure-отчёт
@@ -81,11 +101,14 @@ ruff check .
 ```bash
 ruff check . --fix
 ```
+
 ## Запуск в Docker
 
 Запустить Docker Desktop.
 
+```bash
 docker compose up --build
+```
 
 Файл `.env` не обязателен. Логин и пароль по умолчанию: `admin` / `password123`.
 Свои значения можно передать переменными `BOOKER_USERNAME` и `BOOKER_PASSWORD`.
@@ -96,5 +119,6 @@ HTML-отчёт собирается сам и лежит в `allure-report/inde
 
 ## GitHub Actions
 
-Если открыть pull request в main, тесты запустятся сами.
+Тесты запускаются автоматически при каждом push и pull request в `main` (файл `.github/workflows/tests.yml`).
+Также можно запустить вручную во вкладке Actions.
 HTML-отчёт Allure будет во вкладке Artifacts, архив называется `allure-report`.
