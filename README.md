@@ -1,5 +1,15 @@
 # Restful Booker API Tests
 
+## Что тестирует проект
+
+Тесты проверяют работу API сервиса [Restful Booker](https://restful-booker.herokuapp.com):
+- Создание токена авторизации
+- Создание бронирования
+- Получение списка бронирований и одного бронирования по ID
+- Обновление бронирования (PUT и PATCH)
+- Удаление бронирования
+- Проверка валидации данных
+
 ## Установка зависимостей
 
 Для работы проекта нужен Python 3.11 или выше.
@@ -42,6 +52,8 @@ allure serve allure-results
 ```bash
 allure generate allure-results -o allure-report --clean
 ```
+
+![Allure Report](allure-report.png)
 
 ### Flaky-тесты и тайм-ауты
 
